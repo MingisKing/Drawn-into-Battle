@@ -9,20 +9,22 @@ class GameScene extends Phaser.Scene{
     this.keyD = this.input.keyboard.addKey(68)
     this.keyA = this.input.keyboard.addKey(65)
   }
-  levelSetup(){
-    this.player = new Player(this,100,100,"mc")
-    this.player.setDepth(1000)
-    this.mapSetup()
-  }
 
   mapSetup(){
     const map = this.make.tilemap({ key: 'map' });
     const tileset = map.addTilesetImage('Spritesheetv2', 'tileset');
-    const ground = map.createLayer('background', tileset,0,0);
-    const terrain = map.createLayer('terrain', tileset,0,0);
-    console.log("HO")
+    map.createLayer('background', tileset,0,0);
+    this.terrain = map.createLayer('terrain', tileset,0,0);
+    this.terrain.setCollisionByProperty({ collides: true });
+    console.log("map setup")
   }
-
+  
+  levelSetup(){
+    this.mapSetup()
+    this.player = new Player(this,0,0,"mc")
+    this.player.setDepth(1000)
+  }
+  
   preload(){
     this.load.spritesheet('mc', 'static/gameFiles/mc.png', {
       frameWidth: 32,
@@ -35,12 +37,16 @@ class GameScene extends Phaser.Scene{
   create(){
     this.levelSetup()
     this.movementSetUp();
+    const camera = this.cameras.main;
+    camera.startFollow(this.player);
+    camera.setBounds(0, 0, 500, 400);
   }
 
   update(){
     this.player.update()
   }
 }
+
 
 class Player extends Phaser.Physics.Arcade.Sprite
 {
@@ -54,6 +60,24 @@ class Player extends Phaser.Physics.Arcade.Sprite
       frameRate: 10,
       repeat: -1
     });
+    this.anims.create({
+      key: 'up',
+      frames: this.anims.generateFrameNumbers('mc', { start: 10, end: 13 }),
+      frameRate: 10,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'left',
+      frames: this.anims.generateFrameNumbers('mc', { start: 15, end: 18 }),
+      frameRate: 10,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'right',
+      frames: this.anims.generateFrameNumbers('mc', { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1
+    });
   }
 
   initPhysics(){
@@ -61,48 +85,52 @@ class Player extends Phaser.Physics.Arcade.Sprite
     this.scene.add.existing(this)
     this.scene.physics.add.existing(this)
     this.setCollideWorldBounds(true);
-  }
-
-  move(direction){
-    if (direction == "l"){
-      this.setVelocityX(-50)
-      console.log("left")
-    }
-    else if (direction == "r"){
-      this.setVelocityX(50)
-      console.log("right")
-    }
-    if (direction == "u"){
-      this.setVelocityY(-50)
-      console.log("up")
-    }
-    else if (direction == "d"){
-      this.setVelocityY(50)
-      this.anims.play('down', true);
-      console.log("down")
-    }
-    if (direction == ""){
-      this.setVelocityX(0)
-      this.setVelocityY(0)
-      this.anims.stop();
-    }
+    this.scene.physics.add.collider(this, this.scene.terrain);
   }
 
   update(){
+    const speed = 100
+    const prevVelocity = this.body.velocity.clone();
+
+    this.setVelocity(0)
+
     if (this.scene.keyA.isDown){
-      this.move("l")
+      this.setVelocityX(-speed)
+      console.log("left")
     }
     else if (this.scene.keyD.isDown){
-      this.move("r")
+      this.setVelocityX(speed)
+      console.log("right")
     }
     if (this.scene.keyW.isDown){
-      this.move("u")
+      this.setVelocityY(-speed)
+      console.log("up")
     }
     else if (this.scene.keyS.isDown){
-      this.move("d")
+      this.setVelocityY(speed)
+      console.log("down")
     }
-    if (this.scene.keyA.isUp && this.scene.keyD.isUp && this.scene.keyW.isUp && this.scene.keyS.isUp){
-      this.move("")
+
+    this.body.velocity.normalize().scale(speed);
+
+    if (this.scene.keyA.isDown){
+      this.anims.play('left', true);
+    }
+    else if (this.scene.keyD.isDown){
+      this.anims.play('right', true);
+    }
+    else if (this.scene.keyW.isDown){
+      this.anims.play('up', true);
+    }
+    else if (this.scene.keyS.isDown){
+      this.anims.play('down', true);
+    }
+    else {
+      this.anims.stop();
+      if (prevVelocity.x < 0) this.setTexture('mc', 15) // move left
+      else if (prevVelocity.x > 0) this.setTexture('mc', 5) // move right
+      else if (prevVelocity.y < 0) this.setTexture('mc', 10) // move up
+      else if (prevVelocity.y > 0) this.setTexture('mc', 0) // move down
     }
   }
 }
@@ -115,8 +143,8 @@ class Test extends GameScene{
 
 const config = {
   type: Phaser.AUTO,
-  width: 800, 
-  height: 600,
+  width: 960, 
+  height: 640,
   fps:60,
   backgroundColor: 0x000000,
   pixelArt:true,

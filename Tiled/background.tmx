@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="19">
+<map version="1.10" tiledversion="1.10.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="24">
  <editorsettings>
   <export target="../static/gamefiles/background.json" format="json"/>
  </editorsettings>
- <tileset firstgid="1" name="Spritesheetv2" tilewidth="32" tileheight="32" tilecount="512" columns="16">
-  <image source="../../../../../Downloads/Sprites/Spritesheetv2.png" width="512" height="1024"/>
- </tileset>
+ <tileset firstgid="1" source="Spritesheetv2.tsx"/>
  <layer id="1" name="background" width="30" height="20">
   <data encoding="csv">
 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,7,7,7,7,
@@ -32,15 +30,15 @@
  </layer>
  <layer id="3" name="terrain" width="30" height="20">
   <properties>
-   <property name="collide" type="bool" value="true"/>
+   <property name="collides" type="bool" value="true"/>
   </properties>
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,
 0,0,0,2,0,0,0,0,0,0,0,2,2,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,
-2,0,0,2,2,0,0,0,0,2,2,2,2,2,2,2,2,0,0,0,2,2,0,0,0,0,0,0,0,0,
-0,2,2,2,2,2,2,2,2,2,0,0,0,2,2,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,
+0,0,0,2,2,0,0,0,0,2,2,2,2,2,2,2,2,0,0,0,2,2,0,0,0,0,0,0,0,0,
+0,0,2,2,2,2,2,2,2,2,0,0,0,2,2,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,
@@ -57,7 +55,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="5" name="random stuffs">
+ <objectgroup id="5" name="random stuffs" visible="0">
   <object id="8" gid="34" x="448" y="288" width="32" height="32"/>
   <object id="10" gid="34" x="224" y="64" width="32" height="32"/>
   <object id="11" gid="34" x="864" y="192" width="32" height="32"/>
