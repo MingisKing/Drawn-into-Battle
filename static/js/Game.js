@@ -3,11 +3,12 @@ class GameScene extends Phaser.Scene{
     super({key: key})
   }
 
-  movementSetUp(){
+  keysSetUp(){
     this.keyW = this.input.keyboard.addKey(87)
     this.keyS = this.input.keyboard.addKey(83)
     this.keyD = this.input.keyboard.addKey(68)
     this.keyA = this.input.keyboard.addKey(65)
+    this.keyEnter = this.input.keyboard.addKey(13)
   }
 
   mapSetup(){
@@ -21,7 +22,7 @@ class GameScene extends Phaser.Scene{
   
   levelSetup(){
     this.mapSetup()
-    this.player = new Player(this,0,0,"mc")
+    this.player = new Player(this,16,16,"mc")
     this.player.setDepth(1000)
   }
   
@@ -36,10 +37,10 @@ class GameScene extends Phaser.Scene{
 
   create(){
     this.levelSetup()
-    this.movementSetUp();
+    this.keysSetUp();
     const camera = this.cameras.main;
     camera.startFollow(this.player);
-    camera.setBounds(0, 0, 500, 400);
+    camera.setBounds(0, 0, 960, 640);
   }
 
   update(){
@@ -84,7 +85,6 @@ class Player extends Phaser.Physics.Arcade.Sprite
 	//initiliase the physics of the character (drag, etc.)
     this.scene.add.existing(this)
     this.scene.physics.add.existing(this)
-    this.setCollideWorldBounds(true);
     this.scene.physics.add.collider(this, this.scene.terrain);
   }
 
@@ -131,6 +131,9 @@ class Player extends Phaser.Physics.Arcade.Sprite
       else if (prevVelocity.x > 0) this.setTexture('mc', 5) // move right
       else if (prevVelocity.y < 0) this.setTexture('mc', 10) // move up
       else if (prevVelocity.y > 0) this.setTexture('mc', 0) // move down
+      if (this.scene.keyEnter.isDown){
+        console.log("enter")
+      }
     }
   }
 }
@@ -141,10 +144,16 @@ class Test extends GameScene{
   }
 }
 
+class Menu extends GameScene{
+  constructor(){
+    super("Menu")
+  }
+}
+
 const config = {
   type: Phaser.AUTO,
-  width: 960, 
-  height: 640,
+  width: 800, 
+  height: 600,
   fps:60,
   backgroundColor: 0x000000,
   pixelArt:true,
