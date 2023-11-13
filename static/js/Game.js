@@ -9,19 +9,25 @@ class GameScene extends Phaser.Scene{
     this.keyD = this.input.keyboard.addKey(68)
     this.keyA = this.input.keyboard.addKey(65)
     this.keyEnter = this.input.keyboard.addKey(13)
+    this.keyUp = this.input.keyboard.addKey(38)
+    this.keyDown = this.input.keyboard.addKey(40)
+    this.keyLeft = this.input.keyboard.addKey(37)
+    this.keyRight = this.input.keyboard.addKey(39)
+    this.keySpace = this.input.keyboard.addKey(32)
   }
 
   mapSetup(){
-    const map = this.make.tilemap({ key: 'map' });
-    const tileset = map.addTilesetImage('Spritesheetv2', 'tileset');
-    map.createLayer('background', tileset,0,0);
-    this.terrain = map.createLayer('terrain', tileset,0,0);
+    this.map = this.make.tilemap({ key: 'map' });
+    this.tileset = this.map.addTilesetImage('Spritesheetv2', 'tileset');
+    this.map.createLayer('background', this.tileset,0,0);
+    this.terrain = this.map.createLayer('terrain', this.tileset,0,0);
     this.terrain.setCollisionByProperty({ collides: true });
     console.log("map setup")
   }
   
   levelSetup(){
     this.mapSetup()
+    this.menu = new Menu(this,700,300,"menu")
     this.player = new Player(this,16,16,"mc")
     this.player.setDepth(1000)
   }
@@ -33,6 +39,7 @@ class GameScene extends Phaser.Scene{
     });
     this.load.image('tileset', 'Tiled/Spritesheetv2.png');
     this.load.tilemapTiledJSON('map', 'static/gameFiles/background.json');
+    this.load.image('menu', 'static/gameFiles/menu.png');
   }
 
   create(){
@@ -40,7 +47,7 @@ class GameScene extends Phaser.Scene{
     this.keysSetUp();
     const camera = this.cameras.main;
     camera.startFollow(this.player);
-    camera.setBounds(0, 0, 960, 640);
+    camera.setBounds(0, 0, 1280, 960);
   }
 
   update(){
@@ -48,6 +55,12 @@ class GameScene extends Phaser.Scene{
   }
 }
 
+class Menu extends Phaser.GameObjects.Sprite{
+  constructor(scene, x, y, texture){
+    super(scene, x, y, texture)
+  }
+
+}
 
 class Player extends Phaser.Physics.Arcade.Sprite
 {
@@ -89,40 +102,40 @@ class Player extends Phaser.Physics.Arcade.Sprite
   }
 
   update(){
-    const speed = 100
+    const speed = 200
     const prevVelocity = this.body.velocity.clone();
 
     this.setVelocity(0)
 
-    if (this.scene.keyA.isDown){
+    if (this.scene.keyA.isDown || this.scene.keyLeft.isDown){
       this.setVelocityX(-speed)
       console.log("left")
     }
-    else if (this.scene.keyD.isDown){
+    else if (this.scene.keyD.isDown || this.scene.keyRight.isDown){
       this.setVelocityX(speed)
       console.log("right")
     }
-    if (this.scene.keyW.isDown){
+    if (this.scene.keyW.isDown || this.scene.keyUp.isDown){
       this.setVelocityY(-speed)
       console.log("up")
     }
-    else if (this.scene.keyS.isDown){
+    else if (this.scene.keyS.isDown || this.scene.keyDown.isDown){
       this.setVelocityY(speed)
       console.log("down")
     }
 
     this.body.velocity.normalize().scale(speed);
 
-    if (this.scene.keyA.isDown){
+    if (this.scene.keyA.isDown || this.scene.keyLeft.isDown){
       this.anims.play('left', true);
     }
-    else if (this.scene.keyD.isDown){
+    else if (this.scene.keyD.isDown || this.scene.keyRight.isDown){
       this.anims.play('right', true);
     }
-    else if (this.scene.keyW.isDown){
+    else if (this.scene.keyW.isDown || this.scene.keyUp.isDown){
       this.anims.play('up', true);
     }
-    else if (this.scene.keyS.isDown){
+    else if (this.scene.keyS.isDown || this.scene.keyDown.isDown){
       this.anims.play('down', true);
     }
     else {
@@ -133,6 +146,12 @@ class Player extends Phaser.Physics.Arcade.Sprite
       else if (prevVelocity.y > 0) this.setTexture('mc', 0) // move down
       if (this.scene.keyEnter.isDown){
         console.log("enter")
+        this.scene.add.existing(this.scene.menu)
+        this.scene.menu.setDepth(1000)
+      }
+      if (this.scene.keySpace.isDown){
+        console.log("space")
+        this.scene.menu.kill()
       }
     }
   }
@@ -141,12 +160,6 @@ class Player extends Phaser.Physics.Arcade.Sprite
 class Test extends GameScene{
   constructor(){
     super("Test")
-  }
-}
-
-class Menu extends GameScene{
-  constructor(){
-    super("Menu")
   }
 }
 
