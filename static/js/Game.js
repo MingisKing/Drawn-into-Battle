@@ -9,11 +9,12 @@ class Stats{
 }
 
 class Weapon extends Stats{
-  constructor(at,def,hp,name,element,type){
+  constructor(at,def,hp,name,element,type,image){
     super(at,def,hp)
     this.name = name
     this.element = element
     this.type = type
+    this.image = image
   }
 }
 
@@ -49,6 +50,8 @@ class EnemyStats extends Stats{
   }
 }
 
+const weapon = new Weapon(0,0,0,"","","")
+
 //Opening Menu
 class StartMenu extends Phaser.Scene{
   constructor(key){
@@ -82,8 +85,12 @@ class GameScene extends Phaser.Scene{
     this.tileset = this.map.addTilesetImage('Spritesheetv2', 'tileset');
     this.background = this.map.createLayer('background', this.tileset,0,0);
     this.background.setCollisionByProperty({ water: true });
+
     this.terrain = this.map.createLayer('terrain', this.tileset,0,0);
     this.terrain.setCollisionByProperty({ collides: true });
+
+    this.chars = this.map.createLayer('chars', this.tileset,0,0);
+    this.chars.setCollisionByProperty({ collides: true });
     console.log("map setup")
   }
   
@@ -140,6 +147,11 @@ class ForgeScene extends Phaser.Scene{
     this.keyEsc = this.input.keyboard.addKey(27)
   }
 
+  // colorToStats(){
+  //   //TBH I have no idea how to do this
+  //   //I'm just gonna leave this here
+  // }
+
   preload(){
     this.load.image('forge', 'static/gameFiles/forge.png');
     this.load.image('swatch', 'static/gameFiles/swatch.png')
@@ -162,6 +174,17 @@ class ForgeScene extends Phaser.Scene{
 
     this.done.on('pointerup', function (pointer){
       this.clearTint();
+
+      // Give weapon stats
+      weapon.at = Math.floor(Math.random() * 10) + 1
+      weapon.def = Math.floor(Math.random() * 10) + 1
+      weapon.hp = Math.floor(Math.random() * 10) + 1
+      weapon.name = ""
+      weapon.element = ""
+      weapon.type = ""
+      weapon.image = ""
+      console.log(weapon)
+      
       this.scene.scene.start("GameScene")
     });
 
@@ -186,8 +209,13 @@ class ForgeScene extends Phaser.Scene{
 
   startDrawing(pointer) {
     this.isDrawing = true;
-    this.graphics.beginPath();
-    this.graphics.moveTo(pointer.x, pointer.y);
+    const worldX = this.input.activePointer.worldX;
+    const worldY = this.input.activePointer.worldY;
+
+    if (worldX > 50 && worldX < 275+50 && worldY > 162.5 && worldY < 275+162.5) {
+      this.graphics.beginPath();
+      this.graphics.moveTo(pointer.x, pointer.y);
+    }
   }
 
   draw(pointer) {
@@ -299,10 +327,19 @@ class Player extends Phaser.Physics.Arcade.Sprite
     this.scene.add.existing(this)
     this.scene.physics.add.existing(this)
     this.scene.physics.add.collider(this, this.scene.terrain, () => {
-      this.scene.sound.play('boop')
-      console.log("collide")
+      if (!this.soundTimer || this.soundTimer.getProgress() === 1) {
+        // Play the sound
+        this.scene.sound.play('boop');
+  
+        // Set up a timer for 2 seconds
+        this.soundTimer = this.scene.time.delayedCall(1000, () => {
+          // Reset the timer when it's done
+          this.soundTimer = null;
+        });
+      }
     });
     this.scene.physics.add.collider(this, this.scene.background);
+    this.scene.physics.add.collider(this, this.scene.chars);
   }
 
   update(){

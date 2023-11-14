@@ -36,6 +36,7 @@
     "last.exportedFilePath": "C:/Users/lumha/OneDrive/Documents/Project/Game/static/gamefiles",
     "last.externalTilesetPath": "C:/Users/lumha/OneDrive/Documents/Project/Game/Tiled",
     "last.imagePath": "C:/Users/lumha/Downloads/Sprites",
+    "lastUsedTilesetExportFilter": "All Files (*)",
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",
     "openFiles": [
@@ -43,7 +44,7 @@
         "Spritesheetv2.tsx"
     ],
     "project": "gamemap.tiled-project",
-    "property.type": "string",
+    "property.type": "bool",
     "recentFiles": [
         "background.tmx",
         "Spritesheetv2.tsx",
