@@ -1,3 +1,10 @@
+class StartMenu extends Phaser.Scene{
+  constructor(key){
+    super({key: key})
+  }
+
+}
+
 class GameScene extends Phaser.Scene{
   constructor(key){
     super({key: key})
@@ -14,12 +21,14 @@ class GameScene extends Phaser.Scene{
     this.keyLeft = this.input.keyboard.addKey(37)
     this.keyRight = this.input.keyboard.addKey(39)
     this.keySpace = this.input.keyboard.addKey(32)
+    this.keyEsc = this.input.keyboard.addKey(27)
   }
 
   mapSetup(){
     this.map = this.make.tilemap({ key: 'map' });
     this.tileset = this.map.addTilesetImage('Spritesheetv2', 'tileset');
-    this.map.createLayer('background', this.tileset,0,0);
+    this.background = this.map.createLayer('background', this.tileset,0,0);
+    this.background.setCollisionByProperty({ water: true });
     this.terrain = this.map.createLayer('terrain', this.tileset,0,0);
     this.terrain.setCollisionByProperty({ collides: true });
     console.log("map setup")
@@ -27,9 +36,10 @@ class GameScene extends Phaser.Scene{
   
   levelSetup(){
     this.mapSetup()
-    this.menu = new Menu(this,700,300,"menu")
-    this.player = new Player(this,16,16,"mc")
+    this.menu = new Menu(this,800,300,"menu")
+    this.player = new Player(this,16,48,"mc")
     this.player.setDepth(1000)
+    this.sound.add('boop')
   }
   
   preload(){
@@ -40,6 +50,7 @@ class GameScene extends Phaser.Scene{
     this.load.image('tileset', 'Tiled/Spritesheetv2.png');
     this.load.tilemapTiledJSON('map', 'static/gameFiles/background.json');
     this.load.image('menu', 'static/gameFiles/menu.png');
+    this.load.audio('boop', 'static/gameFiles/boop.mp3')
   }
 
   create(){
@@ -58,8 +69,13 @@ class GameScene extends Phaser.Scene{
 class Menu extends Phaser.GameObjects.Sprite{
   constructor(scene, x, y, texture){
     super(scene, x, y, texture)
+    this.setScrollFactor(0)
   }
 
+  MenuSetUp(){
+    this.scene.add.existing(this)
+    this.setDepth(1000)
+  }
 }
 
 class Player extends Phaser.Physics.Arcade.Sprite
@@ -98,7 +114,11 @@ class Player extends Phaser.Physics.Arcade.Sprite
 	//initiliase the physics of the character (drag, etc.)
     this.scene.add.existing(this)
     this.scene.physics.add.existing(this)
-    this.scene.physics.add.collider(this, this.scene.terrain);
+    this.scene.physics.add.collider(this, this.scene.terrain, () => {
+      this.scene.sound.play('boop')
+      console.log("collide")
+    });
+    this.scene.physics.add.collider(this, this.scene.background);
   }
 
   update(){
@@ -146,12 +166,13 @@ class Player extends Phaser.Physics.Arcade.Sprite
       else if (prevVelocity.y > 0) this.setTexture('mc', 0) // move down
       if (this.scene.keyEnter.isDown){
         console.log("enter")
-        this.scene.add.existing(this.scene.menu)
-        this.scene.menu.setDepth(1000)
+        this.scene.menu.setVisible(true)
+        this.scene.menu.MenuSetUp()
+        
       }
-      if (this.scene.keySpace.isDown){
-        console.log("space")
-        this.scene.menu.kill()
+      if (this.scene.keyEsc.isDown && this.scene.menu){
+        console.log("escape")
+        this.scene.menu.setVisible(false)
       }
     }
   }
@@ -176,6 +197,7 @@ const config = {
 		fps:60,
 	},
   scene:[Test],
+  autoCenter:true,
 }
   
 var game = new Phaser.Game(config);
