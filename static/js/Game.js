@@ -1,3 +1,55 @@
+// Game stats
+
+class Stats{
+  constructor(at,def,hp){
+    this.at = at
+    this.def = def
+    this.hp = hp
+  }
+}
+
+class Weapon extends Stats{
+  constructor(at,def,hp,name,element,type){
+    super(at,def,hp)
+    this.name = name
+    this.element = element
+    this.type = type
+  }
+}
+
+class PlayerStats extends Stats{
+  constructor(at,def,hp,name,weapon){
+    super(at,def,hp)
+    this.name = name
+    this.weapon = weapon
+  }
+
+  attack(enemy){
+    if(this.weapon.element == enemy.weak){
+      enemy.hp -= this.at + this.weapon.at * 1.5 - enemy.def
+    }
+    else{
+      enemy.hp -= this.at + this.weapon.at - enemy.def
+    }
+  }
+
+  damage(dmg){
+    this.hp -= dmg + this.def
+  }
+
+  checkdead(){
+    return this.hp <= 0
+  }
+}
+
+class EnemyStats extends Stats{
+  constructor(at,def,hp,weak){
+    super(at,def,hp)
+    this.weak = weak
+  }
+}
+
+//Opening Menu
 class StartMenu extends Phaser.Scene{
   constructor(key){
     super({key: key})
@@ -5,9 +57,10 @@ class StartMenu extends Phaser.Scene{
 
 }
 
+//Game Scene
 class GameScene extends Phaser.Scene{
-  constructor(key){
-    super({key: key})
+  constructor(){
+    super({key: "GameScene"})
   }
 
   keysSetUp(){
@@ -37,7 +90,7 @@ class GameScene extends Phaser.Scene{
   levelSetup(){
     this.mapSetup()
     this.menu = new Menu(this,800,300,"menu")
-    this.player = new Player(this,16,48,"mc")
+    this.player = new Player(this,48,80,"mc")
     this.player.setDepth(1000)
     this.sound.add('boop')
   }
@@ -66,18 +119,149 @@ class GameScene extends Phaser.Scene{
   }
 }
 
+// Forge Scene
+class ForgeScene extends Phaser.Scene{
+  constructor(key){
+    super({key: "ForgeScene"})
+    
+  }
+
+  keysSetUp(){
+    this.keyW = this.input.keyboard.addKey(87)
+    this.keyS = this.input.keyboard.addKey(83)
+    this.keyD = this.input.keyboard.addKey(68)
+    this.keyA = this.input.keyboard.addKey(65)
+    this.keyEnter = this.input.keyboard.addKey(13)
+    this.keyUp = this.input.keyboard.addKey(38)
+    this.keyDown = this.input.keyboard.addKey(40)
+    this.keyLeft = this.input.keyboard.addKey(37)
+    this.keyRight = this.input.keyboard.addKey(39)
+    this.keySpace = this.input.keyboard.addKey(32)
+    this.keyEsc = this.input.keyboard.addKey(27)
+  }
+
+  preload(){
+    this.load.image('forge', 'static/gameFiles/forge.png');
+    this.load.image('swatch', 'static/gameFiles/swatch.png')
+    this.load.image('done', 'static/gameFiles/done.png')
+    console.log("forge setup")
+  }
+
+  create(){
+    this.keysSetUp();
+    this.forge = this.add.image(400, 300, 'forge')
+    this.done = this.add.image(212.5-32, 500, 'done').setInteractive()
+
+    this.done.on('pointerdown', function (pointer){
+      this.setTint(0xADD8E6);
+    });
+
+    this.done.on('pointerout', function (pointer){
+      this.clearTint();
+    });
+
+    this.done.on('pointerup', function (pointer){
+      this.clearTint();
+      this.scene.scene.start("GameScene")
+    });
+
+    console.log("forge")
+
+    // Create a graphics object to draw with
+    this.isDrawing = false;
+    this.currColor = 0xffffff
+    this.graphics = this.add.graphics();
+    this.graphics.fillStyle(0xffffff, 1);
+    this.graphics.fillRect(50, 162.5, 275, 275);
+
+    // Set up pointer events for drawing
+    this.input.on('pointerdown', this.startDrawing, this);
+    this.input.on('pointermove', this.draw, this);
+    this.input.on('pointerup', this.stopDrawing, this);
+
+    // Create a swatch to change colors with
+    this.swatch = this.add.image(800-(425/2), 600-(275/2), 'swatch').setInteractive()
+    this.swatch.on('pointerdown', this.changeColor, this)
+  }
+
+  startDrawing(pointer) {
+    this.isDrawing = true;
+    this.graphics.beginPath();
+    this.graphics.moveTo(pointer.x, pointer.y);
+  }
+
+  draw(pointer) {
+    if (!this.isDrawing) return;
+    const worldX = this.input.activePointer.worldX;
+    const worldY = this.input.activePointer.worldY;
+
+    if (worldX > 50 && worldX < 275+50 && worldY > 162.5 && worldY < 275+162.5) {
+      this.graphics.lineTo(pointer.x, pointer.y);
+      this.graphics.strokePath();
+    }
+  }
+
+  stopDrawing() {
+    this.isDrawing = false;
+  }
+  
+  changeColor(){
+    const worldX = this.input.activePointer.worldX;
+    const worldY = this.input.activePointer.worldY;
+
+    this.swatch.on('pointerdown', () => {
+      var color = this.textures.getPixel(worldX-(800-425), worldY-(600-275), 'swatch');
+      console.log(color)
+      if (color) {
+        var colorHex = Phaser.Display.Color.RGBToString(color.r, color.g, color.b, 0, '0x');
+        console.log(worldX - (800 - 425), worldY - (600 - 275), colorHex);
+        this.currColor = colorHex
+      } else {
+        console.log("Pixel outside the bounds of the texture.");
+      }
+    });
+  }
+
+  update(){
+    this.graphics.lineStyle(5, this.currColor, 1);
+    if (this.keyEsc.isDown){
+      console.log("escape")
+      this.scene.start("GameScene")
+    }
+  }
+}
+
+// Menu
 class Menu extends Phaser.GameObjects.Sprite{
   constructor(scene, x, y, texture){
     super(scene, x, y, texture)
     this.setScrollFactor(0)
+
+    this.on('pointerdown', function (pointer){
+      this.setTint(0xADD8E6);
+    });
+
+    this.on('pointerout', function (pointer){
+      this.clearTint();
+    });
+
+    this.on('pointerup', function (pointer){
+      this.clearTint();
+      this.setInteractive(false)
+      this.scene.scene.start("ForgeScene")
+      console.log("startforge")
+    });
   }
 
   MenuSetUp(){
+    this.setInteractive()
     this.scene.add.existing(this)
     this.setDepth(1000)
   }
+
 }
 
+// Player
 class Player extends Phaser.Physics.Arcade.Sprite
 {
   constructor(scene,x,y,spriteKey){
@@ -178,11 +362,7 @@ class Player extends Phaser.Physics.Arcade.Sprite
   }
 }
 
-class Test extends GameScene{
-  constructor(){
-    super("Test")
-  }
-}
+
 
 const config = {
   type: Phaser.AUTO,
@@ -196,7 +376,7 @@ const config = {
 
 		fps:60,
 	},
-  scene:[Test],
+  scene:[GameScene, ForgeScene],
   autoCenter:true,
 }
   

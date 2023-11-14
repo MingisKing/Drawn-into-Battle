@@ -43,7 +43,7 @@
         "Spritesheetv2.tsx"
     ],
     "project": "gamemap.tiled-project",
-    "property.type": "bool",
+    "property.type": "string",
     "recentFiles": [
         "background.tmx",
         "Spritesheetv2.tsx",
