@@ -23,10 +23,10 @@
         },
         "background.tmx": {
             "scale": 0.75,
-            "selectedLayer": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 871.3333333333334,
-                "y": 451.33333333333326
+                "x": 527.3333333333334,
+                "y": 653.9999999999999
             }
         },
         "background.tmx#Spritesheetv2": {

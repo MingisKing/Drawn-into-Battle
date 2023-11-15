@@ -1,5 +1,4 @@
 // Game stats
-
 class Stats{
   constructor(at,def,hp){
     this.at = at
@@ -50,20 +49,14 @@ class EnemyStats extends Stats{
   }
 }
 
-const weapon = new Weapon(0,0,0,"","","")
+// Game stats setup
+const weapon = new Weapon(0,0,0,"","",null)
+const player = new PlayerStats(0,0,0,"",weapon)
 
-//Opening Menu
-class StartMenu extends Phaser.Scene{
+// Scenes Setup
+class SceneStruct extends Phaser.Scene{
   constructor(key){
     super({key: key})
-  }
-
-}
-
-//Game Scene
-class GameScene extends Phaser.Scene{
-  constructor(){
-    super({key: "GameScene"})
   }
 
   keysSetUp(){
@@ -79,10 +72,37 @@ class GameScene extends Phaser.Scene{
     this.keySpace = this.input.keyboard.addKey(32)
     this.keyEsc = this.input.keyboard.addKey(27)
   }
+}
+
+//Opening Menu
+class StartScene extends SceneStruct{
+  constructor(){
+    super("StartScene")
+  }
+  preload(){
+    this.load.image('startscreen', 'static/gameFiles/startscreen.png')
+  }
+
+  create(){
+    this.keysSetUp();
+    this.startscreen = this.add.image(400, 300, 'startscreen').setInteractive()
+    this.startscreen.on('pointerdown', function (pointer){
+      this.setTint(0xADD8E6);
+      this.scene.scene.start("GameScene")
+    });
+  }
+}
+
+//Game Scene
+class GameScene extends SceneStruct{
+  constructor(){
+    super("GameScene")
+  }
 
   mapSetup(){
     this.map = this.make.tilemap({ key: 'map' });
     this.tileset = this.map.addTilesetImage('Spritesheetv2', 'tileset');
+    
     this.background = this.map.createLayer('background', this.tileset,0,0);
     this.background.setCollisionByProperty({ water: true });
 
@@ -102,6 +122,12 @@ class GameScene extends Phaser.Scene{
     this.sound.add('boop')
   }
   
+  cameraSetup(){
+    const camera = this.cameras.main;
+    camera.startFollow(this.player);
+    camera.setBounds(0, 0, 1280, 960);
+  }
+
   preload(){
     this.load.spritesheet('mc', 'static/gameFiles/mc.png', {
       frameWidth: 32,
@@ -116,9 +142,7 @@ class GameScene extends Phaser.Scene{
   create(){
     this.levelSetup()
     this.keysSetUp();
-    const camera = this.cameras.main;
-    camera.startFollow(this.player);
-    camera.setBounds(0, 0, 1280, 960);
+    this.cameraSetup()
   }
 
   update(){
@@ -127,84 +151,9 @@ class GameScene extends Phaser.Scene{
 }
 
 // Forge Scene
-class ForgeScene extends Phaser.Scene{
-  constructor(key){
-    super({key: "ForgeScene"})
-    
-  }
-
-  keysSetUp(){
-    this.keyW = this.input.keyboard.addKey(87)
-    this.keyS = this.input.keyboard.addKey(83)
-    this.keyD = this.input.keyboard.addKey(68)
-    this.keyA = this.input.keyboard.addKey(65)
-    this.keyEnter = this.input.keyboard.addKey(13)
-    this.keyUp = this.input.keyboard.addKey(38)
-    this.keyDown = this.input.keyboard.addKey(40)
-    this.keyLeft = this.input.keyboard.addKey(37)
-    this.keyRight = this.input.keyboard.addKey(39)
-    this.keySpace = this.input.keyboard.addKey(32)
-    this.keyEsc = this.input.keyboard.addKey(27)
-  }
-
-  // colorToStats(){
-  //   //TBH I have no idea how to do this
-  //   //I'm just gonna leave this here
-  // }
-
-  preload(){
-    this.load.image('forge', 'static/gameFiles/forge.png');
-    this.load.image('swatch', 'static/gameFiles/swatch.png')
-    this.load.image('done', 'static/gameFiles/done.png')
-    console.log("forge setup")
-  }
-
-  create(){
-    this.keysSetUp();
-    this.forge = this.add.image(400, 300, 'forge')
-    this.done = this.add.image(212.5-32, 500, 'done').setInteractive()
-
-    this.done.on('pointerdown', function (pointer){
-      this.setTint(0xADD8E6);
-    });
-
-    this.done.on('pointerout', function (pointer){
-      this.clearTint();
-    });
-
-    this.done.on('pointerup', function (pointer){
-      this.clearTint();
-
-      // Give weapon stats
-      weapon.at = Math.floor(Math.random() * 10) + 1
-      weapon.def = Math.floor(Math.random() * 10) + 1
-      weapon.hp = Math.floor(Math.random() * 10) + 1
-      weapon.name = ""
-      weapon.element = ""
-      weapon.type = ""
-      weapon.image = ""
-      console.log(weapon)
-      
-      this.scene.scene.start("GameScene")
-    });
-
-    console.log("forge")
-
-    // Create a graphics object to draw with
-    this.isDrawing = false;
-    this.currColor = 0xffffff
-    this.graphics = this.add.graphics();
-    this.graphics.fillStyle(0xffffff, 1);
-    this.graphics.fillRect(50, 162.5, 275, 275);
-
-    // Set up pointer events for drawing
-    this.input.on('pointerdown', this.startDrawing, this);
-    this.input.on('pointermove', this.draw, this);
-    this.input.on('pointerup', this.stopDrawing, this);
-
-    // Create a swatch to change colors with
-    this.swatch = this.add.image(800-(425/2), 600-(275/2), 'swatch').setInteractive()
-    this.swatch.on('pointerdown', this.changeColor, this)
+class ForgeScene extends SceneStruct{
+  constructor(){
+    super("ForgeScene")
   }
 
   startDrawing(pointer) {
@@ -250,6 +199,60 @@ class ForgeScene extends Phaser.Scene{
     });
   }
 
+  preload(){
+    this.load.image('forge', 'static/gameFiles/forge.png');
+    this.load.image('swatch', 'static/gameFiles/swatch.png')
+    this.load.image('done', 'static/gameFiles/done.png')
+    console.log("forge setup")
+  }
+
+  create(){
+    this.keysSetUp();
+    this.forge = this.add.image(400, 300, 'forge')
+    this.done = this.add.image(212.5-32, 500, 'done').setInteractive()
+
+    this.done.on('pointerdown', function (pointer){
+      this.setTint(0xADD8E6);
+    });
+
+    this.done.on('pointerout', function (pointer){
+      this.clearTint();
+    });
+
+    this.done.on('pointerup', function (pointer){
+      this.clearTint();
+
+      // Give weapon stats
+      weapon.at = Math.floor(Math.random() * 10) + 1
+      weapon.def = Math.floor(Math.random() * 10) + 1
+      weapon.hp = Math.floor(Math.random() * 10) + 1
+      var weaponName = prompt("What is the name of your weapon?")
+      weapon.name = weaponName
+      weapon.element = ""
+      weapon.type = ""
+      weapon.image = this.graphics.generateTexture('weapon');
+      console.log(weapon)
+      
+      this.scene.scene.start("GameScene")
+    });
+
+    // Create a graphics object to draw with
+    this.isDrawing = false;
+    this.currColor = 0xffffff // Default white
+    this.graphics = this.add.graphics();
+    this.graphics.fillStyle(0xffffff, 1);
+    this.graphics.fillRect(50, 162.5, 275, 275);
+
+    // Set up pointer events for drawing
+    this.input.on('pointerdown', this.startDrawing, this);
+    this.input.on('pointermove', this.draw, this);
+    this.input.on('pointerup', this.stopDrawing, this);
+
+    // Create a swatch to change colors with
+    this.swatch = this.add.image(800-(425/2), 600-(275/2), 'swatch').setInteractive()
+    this.swatch.on('pointerdown', this.changeColor, this)
+  }
+
   update(){
     this.graphics.lineStyle(5, this.currColor, 1);
     if (this.keyEsc.isDown){
@@ -259,10 +262,19 @@ class ForgeScene extends Phaser.Scene{
   }
 }
 
+// Battle Scene
+class BattleScene extends Phaser.Scene{
+  constructor(){
+    super("BattleScene")
+  }
+}
+
+// Sprites
 // Menu
 class Menu extends Phaser.GameObjects.Sprite{
   constructor(scene, x, y, texture){
     super(scene, x, y, texture)
+    // Make sure the menu does not move when the camera moves
     this.setScrollFactor(0)
 
     this.on('pointerdown', function (pointer){
@@ -392,14 +404,11 @@ class Player extends Phaser.Physics.Arcade.Sprite
         
       }
       if (this.scene.keyEsc.isDown && this.scene.menu){
-        console.log("escape")
         this.scene.menu.setVisible(false)
       }
     }
   }
 }
-
-
 
 const config = {
   type: Phaser.AUTO,
@@ -413,7 +422,7 @@ const config = {
 
 		fps:60,
 	},
-  scene:[GameScene, ForgeScene],
+  scene:[StartScene, GameScene, ForgeScene, BattleScene],
   autoCenter:true,
 }
   
