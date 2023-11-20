@@ -116,7 +116,8 @@ class GameScene extends SceneStruct{
   
   levelSetup(){
     this.mapSetup()
-    this.menu = new Menu(this,800,300,"menu")
+    this.menu = new Menu(this,700,300,"menu")
+    this.menu.setVisible(false)
     this.player = new Player(this,48,80,"mc")
     this.player.setDepth(1000)
     this.sound.add('boop')
@@ -136,7 +137,10 @@ class GameScene extends SceneStruct{
     this.load.image('tileset', 'Tiled/Spritesheetv2.png');
     this.load.tilemapTiledJSON('map', 'static/gameFiles/background.json');
     this.load.image('menu', 'static/gameFiles/menu.png');
+    this.load.image('forgebutton', 'static/gameFiles/forgebutton.png');
+    this.load.image('weaponbutton', 'static/gameFiles/weaponbutton.png');
     this.load.audio('boop', 'static/gameFiles/boop.mp3')
+    this.load.audio('bing', 'static/gameFiles/bing.mp3')
   }
 
   create(){
@@ -230,7 +234,7 @@ class ForgeScene extends SceneStruct{
       weapon.name = weaponName
       weapon.element = ""
       weapon.type = ""
-      weapon.image = this.graphics.generateTexture('weapon');
+      weapon.image = this.scene.graphics.generateTexture('weapon', 275, 275);
       console.log(weapon)
       
       this.scene.scene.start("GameScene")
@@ -262,8 +266,30 @@ class ForgeScene extends SceneStruct{
   }
 }
 
+// Weapon Scene
+class WeaponScene extends SceneStruct{
+  constructor(){
+    super("WeaponScene")
+  }
+  preload(){
+    this.load.image('weaponbg', 'static/gameFiles/weaponbg.png');
+  }
+  create(){
+    this.keysSetUp();
+    this.weaponbg = this.add.image(400, 300, 'weaponbg')
+    this.weaponpic = this.add.image(400, 300, weapon.image)
+    console.log("weapon setup")
+  }
+  update(){
+    if (this.keyEsc.isDown){
+      console.log("escape")
+      this.scene.start("GameScene")
+    }
+  }
+}
+
 // Battle Scene
-class BattleScene extends Phaser.Scene{
+class BattleScene extends SceneStruct{
   constructor(){
     super("BattleScene")
   }
@@ -276,7 +302,26 @@ class Menu extends Phaser.GameObjects.Sprite{
     super(scene, x, y, texture)
     // Make sure the menu does not move when the camera moves
     this.setScrollFactor(0)
+    this.forgebutton = new Button(this.scene, 32+600+24, 32+100, 'forgebutton', "ForgeScene")
+    this.weaponbutton = new Button(this.scene, 32+600+24+64+24, 32+100, 'weaponbutton', "WeaponScene")
+  }
 
+  MenuSetUp(){
+    this.setInteractive()
+    this.scene.add.existing(this)
+    this.setDepth(1000)
+    this.scene.add.existing(this.forgebutton).setInteractive()
+    this.scene.add.existing(this.weaponbutton).setInteractive()
+  }
+
+}
+
+class Button extends Phaser.GameObjects.Sprite{
+  constructor(scene, x, y, texture, sceneToStart){
+    super(scene, x, y, texture)
+    // Make sure the button does not move when the camera moves
+    this.setScrollFactor(0)
+    this.setDepth(1000)
     this.on('pointerdown', function (pointer){
       this.setTint(0xADD8E6);
     });
@@ -288,17 +333,10 @@ class Menu extends Phaser.GameObjects.Sprite{
     this.on('pointerup', function (pointer){
       this.clearTint();
       this.setInteractive(false)
-      this.scene.scene.start("ForgeScene")
+      this.scene.scene.start(sceneToStart)
       console.log("startforge")
     });
   }
-
-  MenuSetUp(){
-    this.setInteractive()
-    this.scene.add.existing(this)
-    this.setDepth(1000)
-  }
-
 }
 
 // Player
@@ -399,12 +437,20 @@ class Player extends Phaser.Physics.Arcade.Sprite
       else if (prevVelocity.y > 0) this.setTexture('mc', 0) // move down
       if (this.scene.keyEnter.isDown){
         console.log("enter")
+        if (this.scene.menu.visible == false){
+          this.scene.sound.play('bing')
+        }
         this.scene.menu.setVisible(true)
+        this.scene.menu.forgebutton.setVisible(true)
+        this.scene.menu.weaponbutton.setVisible(true)
         this.scene.menu.MenuSetUp()
-        
       }
       if (this.scene.keyEsc.isDown && this.scene.menu){
         this.scene.menu.setVisible(false)
+        this.scene.menu.forgebutton.setInteractive(false)
+        this.scene.menu.forgebutton.setVisible(false)
+        this.scene.menu.weaponbutton.setInteractive(false)
+        this.scene.menu.weaponbutton.setVisible(false)
       }
     }
   }
@@ -422,7 +468,7 @@ const config = {
 
 		fps:60,
 	},
-  scene:[StartScene, GameScene, ForgeScene, BattleScene],
+  scene:[StartScene, GameScene, ForgeScene, BattleScene, WeaponScene],
   autoCenter:true,
 }
   

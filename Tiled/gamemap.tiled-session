@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Spritesheetv2.tsx",
+    "activeFile": "background.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -25,8 +25,8 @@
             "scale": 0.75,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 527.3333333333334,
-                "y": 653.9999999999999
+                "x": 526,
+                "y": 648.6666666666667
             }
         },
         "background.tmx#Spritesheetv2": {
@@ -46,8 +46,8 @@
     "project": "gamemap.tiled-project",
     "property.type": "bool",
     "recentFiles": [
-        "background.tmx",
         "Spritesheetv2.tsx",
+        "background.tmx",
         "Retro-Lines-Tiles-transparent.tsx"
     ],
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
